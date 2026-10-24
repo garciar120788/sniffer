@@ -112,8 +112,8 @@ Ambos comandos deben mostrar el número de versión instalada.
 Clone el repositorio y acceda a la carpeta del proyecto:
 
 ```bash
-git clone https://github.com/garciar120788/sniffer-python.git
-cd sniffer-python
+git clone https://github.com/garciar120788/sniffer.git
+cd sniffer
 ```
 
 Todos los comandos indicados en este manual deben ejecutarse desde esta carpeta.
@@ -141,7 +141,7 @@ Toda la configuración de la aplicación se define en el archivo **`.env`**, ubi
 La interfaz que se va a monitorear se define en la **línea 25** del archivo `.env`:
 
 ```
-sniffer-python/
+sniffer/
 └── .env        <-- línea 25:  CAPTURE_IFACE=enp1s0
 ```
 
@@ -544,7 +544,7 @@ Las pruebas verifican lo siguiente:
 ## 12. Anexo: estructura del proyecto
 
 ```
-sniffer-python/
+sniffer/
 ├── .env                      Configuración (interfaz en la línea 25)
 ├── docker-compose.yml        Servicios: db (PostgreSQL) y sniffer (captura)
 ├── Dockerfile                Definición de la imagen de la aplicación
