@@ -1,0 +1,81 @@
+# =====================================================================
+# Capturador de paquetes IPv4 y base de datos PostgreSQL
+#
+# La interfaz de red no se configura en este archivo, sino en `.env`
+# (variable CAPTURE_IFACE). Consulte el manual, sección 4.2.
+# =====================================================================
+
+services:
+
+  # -------------------------------------------------------------------
+  # Base de datos
+  # -------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: sniffer-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sniffer}
+      POSTGRES_USER: ${DB_USER:-sniffer}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sniffer}
+    # Publicado únicamente en localhost: el capturador utiliza la red del host
+    # y accede a la base de datos por 127.0.0.1; no es accesible desde otros equipos.
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------
+  # Capturador
+  # -------------------------------------------------------------------
+  sniffer:
+    build: .
+    image: packet-sniffer:1.0
+    container_name: sniffer-app
+    # Red del host: el contenedor accede a las interfaces físicas del equipo
+    # (p. ej. enp1s0, wlp3s0). En caso contrario, solo dispondría de su eth0 virtual.
+    network_mode: host
+    # Principio de mínimo privilegio: se eliminan todas las capacidades y se
+    # añade únicamente NET_RAW, la única requerida para la captura (en lugar de
+    # `privileged: true`). NET_RAW permite abrir sockets AF_PACKET; Scapy
+    # activa el modo promiscuo mediante PACKET_ADD_MEMBERSHIP sobre el mismo
+    # socket, por lo que no se requiere NET_ADMIN.
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_RAW
+    environment:
+      CAPTURE_IFACE: ${CAPTURE_IFACE}          # <- valor definido en .env (línea 25)
+      CAPTURE_FILTER: ${CAPTURE_FILTER:-}
+      CAPTURE_COUNT: ${CAPTURE_COUNT:-0}
+      CAPTURE_TIMEOUT: ${CAPTURE_TIMEOUT:-0}
+      STATS_INTERVAL: ${STATS_INTERVAL:-5}
+      BATCH_SIZE: ${BATCH_SIZE:-500}
+      FLUSH_INTERVAL: ${FLUSH_INTERVAL:-1}
+      QUEUE_SIZE: ${QUEUE_SIZE:-100000}
+      DB_HOST: 127.0.0.1
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-sniffer}
+      DB_USER: ${DB_USER:-sniffer}
+      DB_PASSWORD: ${DB_PASSWORD:-sniffer}
+    volumes:
+      # Carpeta para el procesamiento de archivos .pcap con la opción --pcap
+      - ./samples:/app/samples
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: true
+    tty: true
+    # `docker compose stop` envía SIGINT (equivalente a Ctrl+C) y concede el tiempo
+    # necesario para guardar los paquetes pendientes y presentar las estadísticas.
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    command: ["capture"]
+
+volumes:
+  pgdata:

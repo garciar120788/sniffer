@@ -1,0 +1,70 @@
+# =====================================================================
+# Archivos excluidos del control de versiones
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# Sistema operativo
+# ---------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+# Windows
+Thumbs.db
+Desktop.ini
+# Linux
+*~
+.directory
+
+# ---------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Pruebas y cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ---------------------------------------------------------------------
+# Editores e IDE
+# ---------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---------------------------------------------------------------------
+# Datos de captura
+# ---------------------------------------------------------------------
+# Archivos .pcap propios que el usuario copie en samples/ para procesarlos
+# con --pcap. Se conserva únicamente el archivo de ejemplo del proyecto.
+samples/*
+!samples/ejemplo.pcap
+
+# Capturas generadas fuera de samples/
+*.pcapng
+
+# ---------------------------------------------------------------------
+# Configuración local
+# ---------------------------------------------------------------------
+# El archivo .env SÍ se versiona, porque contiene la configuración por
+# defecto que necesita la aplicación para ejecutarse. Para variantes
+# locales con credenciales reales, utilice .env.local (excluido).
+.env.local
+.env.*.local
+
+# Registros
+*.log
